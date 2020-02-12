@@ -516,11 +516,8 @@ public class TreeCommentManager extends AbstractCommentManager {
     }
 
     /**
-     * Checks if a document has comments.
+     * Returns {@code true} if the document has comments.
      *
-     * @param session the core session
-     * @param document the document model who's comments are being counted
-     * @return {@code true} if comments were found
      * @since 11.1
      */
     protected boolean hasComments(CoreSession session, DocumentModel document) {
@@ -530,12 +527,8 @@ public class TreeCommentManager extends AbstractCommentManager {
     }
 
     /**
-     * Checks if a document has comments from a particular user.
+     * Returns {@code true} if the documents has comments from the given user.
      *
-     * @param session the core session
-     * @param document the document model who's comments are being counted
-     * @param user the name of the user who's comments are being counted
-     * @return {@code true} if comments by user were found
      * @since 11.1
      */
     protected boolean hasComments(CoreSession session, DocumentModel document, String user) {
@@ -548,14 +541,12 @@ public class TreeCommentManager extends AbstractCommentManager {
      * Resolves top level document and calls
      * {@link #handleNotificationAutoSubscriptions(CoreSession, DocumentModel, DocumentModel)}.
      *
-     * @param session the core session
-     * @param commentModelToCreate the comment being added
      * @since 10.10-HF22
      */
-    protected void handleNotificationAutoSubscriptions(CoreSession session, DocumentModel commentModelToCreate) {
-        DocumentRef topLevelDocRef = getTopLevelCommentAncestor(session, new IdRef(commentModelToCreate.getId()));
+    protected void handleNotificationAutoSubscriptions(CoreSession session, DocumentModel commentDoc) {
+        DocumentRef topLevelDocRef = getTopLevelCommentAncestor(session, commentDoc.getRef());
         DocumentModel topLevelDocument = session.getDocument(topLevelDocRef);
-        handleNotificationAutoSubscriptions(session, topLevelDocument, commentModelToCreate);
+        handleNotificationAutoSubscriptions(session, topLevelDocument, commentDoc);
     }
 
     protected void handleNotificationAutoSubscriptions(CoreSession session, DocumentModel topLevelDocument,
@@ -586,8 +577,6 @@ public class TreeCommentManager extends AbstractCommentManager {
     /**
      * Subscribes a user to notifications on the document.
      *
-     * @param document the document being commented
-     * @param user the user to subscribe to notifications
      * @since 11.1
      */
     protected void subscribeToNotifications(DocumentModel document, NuxeoPrincipal user) {
