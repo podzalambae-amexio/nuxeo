@@ -30,16 +30,24 @@ import static org.nuxeo.ecm.platform.comment.api.CommentConstants.TOP_LEVEL_DOCU
 import static org.nuxeo.ecm.platform.comment.workflow.utils.CommentsConstants.COMMENT_TEXT;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.Map;
 
+import org.apache.log4j.LogManager;
+import org.apache.log4j.Logger;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.event.Event;
 import org.nuxeo.ecm.core.event.impl.DocumentEventContext;
+import org.nuxeo.ecm.platform.usermanager.UserManager;
+import org.nuxeo.ecm.platform.usermanager.exceptions.UserAlreadyExistsException;
+import org.nuxeo.runtime.api.Framework;
 
 /**
  * @since 11.1
  */
 public class CommentUtils {
+
+    private static final Logger log = LogManager.getLogger(CommentUtils.class);
 
     // Suppress default constructor for noninstantiability
     private CommentUtils() {
@@ -78,4 +86,20 @@ public class CommentUtils {
         DocumentModel sourceDoc = ((DocumentEventContext) event.getContext()).getSourceDocument();
         assertEquals(expectedCommentedDocModel.getRef(), sourceDoc.getRef());
     }
+
+    public static void createUser(String userName) {
+        try {
+            UserManager userManager = Framework.getService(UserManager.class);
+            DocumentModel userModel = userManager.getBareUserModel();
+            userModel.setProperty("user", "username", userName);
+            userModel.setProperty("user", "email", userName + "@nuxeo.com");
+            userModel.setProperty("user", "password", userName);
+            userModel.setProperty("user", "groups", Collections.singletonList("members"));
+            userManager.createUser(userModel);
+        } catch (UserAlreadyExistsException e) {
+            // Avoid failure in tests if the user already exists
+            log.trace("User already exists", e);
+        }
+    }
+
 }

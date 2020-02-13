@@ -201,15 +201,7 @@ public class AnnotationServiceImpl extends DefaultComponent implements Annotatio
             throw new CommentSecurityException("The user " + session.getPrincipal().getName()
                     + " can not edit annotations of document " + annotation.getParentId());
         }
-        DocumentModel annotationModel = getAnnotationModel(session, entityId);
-        if (annotationModel == null) {
-            throw new CommentNotFoundException("The external annotation " + entityId + " does not exist.");
-        }
-        Comments.annotationToDocumentModel(annotation, annotationModel);
-        if (annotation instanceof ExternalEntity) {
-            Comments.externalEntityToDocumentModel((ExternalEntity) annotation, annotationModel);
-        }
-        session.saveDocument(annotationModel);
+        Framework.getService(CommentManager.class).updateExternalComment(session, entityId, annotation);
     }
 
     @Override
