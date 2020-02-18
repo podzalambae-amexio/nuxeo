@@ -24,6 +24,7 @@ import static org.junit.Assert.assertNotNull;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -34,6 +35,8 @@ import javax.inject.Inject;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.assertj.core.util.Arrays;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.nuxeo.apidoc.api.BundleGroupFlatTree;
@@ -62,6 +65,19 @@ public class TestSnapshotPersist {
 
     @Inject
     protected SnapshotManager snapshotManager;
+
+    @Before
+    public void setupRuntime() throws IOException {
+        Framework.getRuntime().getHome();
+
+        String rootPath = Framework.getRuntime().getHome().getAbsolutePath();
+        File dir = new File(rootPath + "/META-INF/");
+        dir.mkdirs();
+
+        FileWriter writer = new FileWriter(rootPath + "/META-INF/nuxeo-preprocessor.xml");
+        writer.write("<?xml version=\"1.0\"?>\n" + "<container></container>");
+        writer.close();
+    }
 
     protected String dumpSnapshot(DistributionSnapshot snap) {
         StringBuilder sb = new StringBuilder();
@@ -101,6 +117,11 @@ public class TestSnapshotPersist {
             BundleInfo bi = snap.getBundle(bid);
             sb.append(" *** ");
             sb.append(bi.getHierarchyPath());
+            sb.append(" *** ");
+            if (bi.getRequirements() == null) {
+                log.error(bi.getId());
+            }
+            sb.append(bi.getRequirements());
             sb.append("\n");
         }
 
@@ -109,6 +130,11 @@ public class TestSnapshotPersist {
             sb.append(" *** ");
             ComponentInfo ci = snap.getComponent(cid);
             sb.append(ci.getHierarchyPath());
+            sb.append(" *** ");
+            if (ci.getRequirements() == null) {
+                log.error(ci.getId());
+            }
+            sb.append(ci.getRequirements());
             sb.append("\n");
         }
 
