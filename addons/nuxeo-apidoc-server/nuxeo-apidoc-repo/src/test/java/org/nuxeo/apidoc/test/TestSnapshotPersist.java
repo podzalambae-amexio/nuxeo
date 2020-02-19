@@ -118,9 +118,6 @@ public class TestSnapshotPersist {
             sb.append(" *** ");
             sb.append(bi.getHierarchyPath());
             sb.append(" *** ");
-            if (bi.getRequirements() == null) {
-                log.error(bi.getId());
-            }
             sb.append(bi.getRequirements());
             sb.append("\n");
         }
@@ -131,9 +128,6 @@ public class TestSnapshotPersist {
             ComponentInfo ci = snap.getComponent(cid);
             sb.append(ci.getHierarchyPath());
             sb.append(" *** ");
-            if (ci.getRequirements() == null) {
-                log.error(ci.getId());
-            }
             sb.append(ci.getRequirements());
             sb.append("\n");
         }
