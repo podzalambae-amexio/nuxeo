@@ -29,8 +29,11 @@ import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Enumeration;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.PropertyResourceBundle;
@@ -131,7 +134,7 @@ public class ServerInfo {
 
     protected final String version;
 
-    protected final Map<String, BundleInfo> bundles = new HashMap<>();
+    protected final Map<String, BundleInfo> bundles = new LinkedHashMap<>();
 
     protected final List<Class<?>> allSpi = new ArrayList<>();
 
@@ -156,8 +159,8 @@ public class ServerInfo {
         return version;
     }
 
-    public Collection<BundleInfo> getBundles() {
-        return bundles.values();
+    public List<BundleInfo> getBundles() {
+        return new ArrayList<>(bundles.values());
     }
 
     public void addBundle(BundleInfo bundle) {
@@ -326,6 +329,14 @@ public class ServerInfo {
         List<ExtensionInfoImpl> contribRegistry = new ArrayList<>();
 
         Collection<RegistrationInfo> registrations = runtime.getComponentManager().getRegistrations();
+        // Sort registrations for deterministic export comparison
+        List<RegistrationInfo> orderedRegistrations = new ArrayList<>(registrations);
+        Collections.sort(orderedRegistrations, new Comparator<RegistrationInfo>() {
+            @Override
+            public int compare(RegistrationInfo o1, RegistrationInfo o2) {
+                return o1.getComponent().getName().getRawName().compareTo(o2.getComponent().getName().getRawName());
+            }
+        });
 
         for (RegistrationInfo ri : registrations) {
             String cname = ri.getName().getName();

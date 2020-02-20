@@ -57,10 +57,10 @@ public interface ComponentInfo extends NuxeoArtifact {
     BundleInfo getBundle();
 
     @JsonIgnore
-    Collection<ExtensionPointInfo> getExtensionPoints();
+    List<ExtensionPointInfo> getExtensionPoints();
 
     @JsonIgnore
-    Collection<ExtensionInfo> getExtensions();
+    List<ExtensionInfo> getExtensions();
 
     ExtensionPointInfo getExtensionPoint(String name);
 
