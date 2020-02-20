@@ -24,7 +24,9 @@ import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.inject.Inject;
 import javax.inject.Named;
@@ -37,7 +39,8 @@ import org.nuxeo.runtime.metrics.MetricsService;
 import org.nuxeo.runtime.test.runner.Features;
 import org.nuxeo.runtime.test.runner.FeaturesRunner;
 
-import com.codahale.metrics.SharedMetricRegistries;
+import io.dropwizard.metrics5.MetricName;
+import io.dropwizard.metrics5.SharedMetricRegistries;
 
 @RunWith(FeaturesRunner.class)
 @Features({ CacheFeature.class })
@@ -113,10 +116,12 @@ public class CacheComplianceFixture {
 
     @Test
     public void hasMetrics() {
+        List<MetricName> expected = Arrays.asList("nuxeo.cache.defaultCache.read", "nuxeo.cache.defaultCache.read-hit",
+                "nuxeo.cache.defaultCache.read-hit-ratio", "nuxeo.cache.defaultCache.read-miss",
+                "nuxeo.cache.defaultCache.write", "nuxeo.cache.defaultCache.invalidate-all",
+                "nuxeo.cache.defaultCache.size").stream().map(MetricName::build).collect(Collectors.toList());
+
         SharedMetricRegistries.getOrCreate(MetricsService.class.getName()).getNames()
-                .containsAll(Arrays.asList("nuxeo.cache.defaultCache.read", "nuxeo.cache.defaultCache.read-hit",
-                        "nuxeo.cache.defaultCache.read-hit-ratio", "nuxeo.cache.defaultCache.read-miss",
-                        "nuxeo.cache.defaultCache.write", "nuxeo.cache.defaultCache.invalidate-all",
-                        "nuxeo.cache.defaultCache.size"));
+                              .containsAll(expected);
     }
 }

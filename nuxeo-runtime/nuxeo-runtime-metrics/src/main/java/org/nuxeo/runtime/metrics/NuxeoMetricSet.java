@@ -26,7 +26,6 @@ import java.util.function.Supplier;
 import io.dropwizard.metrics5.Gauge;
 import io.dropwizard.metrics5.Metric;
 import io.dropwizard.metrics5.MetricName;
-import io.dropwizard.metrics5.MetricRegistry;
 import io.dropwizard.metrics5.MetricSet;
 
 /**
@@ -45,6 +44,10 @@ public class NuxeoMetricSet implements MetricSet {
         this(null);
     }
 
+    public NuxeoMetricSet(String name, String... names) {
+        this(MetricName.build(name).append(MetricName.build(names)));
+    }
+
     public NuxeoMetricSet(MetricName name) {
         this(HashMap::new, name);
     }
@@ -58,15 +61,11 @@ public class NuxeoMetricSet implements MetricSet {
      * Put a gauge inside this {@link MetricSet} as name {@code prefixName.name.names[0].names[1]...};
      */
     public <T> void putGauge(Gauge<T> gauge, MetricName name) {
-        metrics.put(buildNameWithPrefix(name), gauge);
+        metrics.put(prefixName.append(name), gauge);
     }
 
-    /**
-     * @return the name built from {@link MetricRegistry#name(String, String...)} prefixed with this
-     *         {@link NuxeoMetricSet}'s prefix
-     */
-    protected MetricName buildNameWithPrefix(MetricName name) {
-        return prefixName.append(name);
+    public <T> void putGauge(Gauge<T> gauge, String name, String... names) {
+        metrics.put(prefixName.append(MetricName.build(name).append(MetricName.build(names))), gauge);
     }
 
     @Override

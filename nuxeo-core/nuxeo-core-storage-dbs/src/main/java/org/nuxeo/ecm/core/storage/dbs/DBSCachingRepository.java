@@ -51,12 +51,14 @@ import org.nuxeo.runtime.api.Framework;
 import org.nuxeo.runtime.cluster.ClusterService;
 import org.nuxeo.runtime.metrics.MetricsService;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.SharedMetricRegistries;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Ordering;
+
+import io.dropwizard.metrics5.MetricName;
+import io.dropwizard.metrics5.MetricRegistry;
+import io.dropwizard.metrics5.SharedMetricRegistries;
 
 /**
  * The DBS Cache layer used to cache some method call of real repository
@@ -153,9 +155,10 @@ public class DBSCachingRepository implements DBSRepository {
         cache.invalidateAll();
         childCache.invalidateAll();
         // Remove metrics
-        String cacheName = MetricRegistry.name("nuxeo", "repositories", repository.getName(), "cache");
-        String childCacheName = MetricRegistry.name("nuxeo", "repositories", repository.getName(), "childCache");
-        registry.removeMatching((name, metric) -> name.startsWith(cacheName) || name.startsWith(childCacheName));
+        MetricName cacheName = MetricRegistry.name("nuxeo", "repositories", repository.getName(), "cache");
+        MetricName childCacheName = MetricRegistry.name("nuxeo", "repositories", repository.getName(), "childCache");
+        registry.removeMatching((name, metric) -> name.getKey().startsWith(cacheName.getKey())
+                || name.getKey().startsWith(childCacheName.getKey()));
         if (log.isInfoEnabled()) {
             log.info(String.format("DBS cache deactivated on '%s' repository", repository.getName()));
         }
