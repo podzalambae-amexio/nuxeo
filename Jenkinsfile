@@ -496,14 +496,15 @@ pipeline {
           Run common unit tests
           ----------------------------------------"""
           dir('nuxeo-common') {
-            sh "mvn -B -nsu test"
+            // sh "mvn -B -nsu test"
+            sh "mvn -B -nsu compile"
           }
         }
       }
       post {
-        always {
-          junit testResults: '**/target/surefire-reports/*.xml'
-        }
+        // always {
+        //   junit testResults: '**/target/surefire-reports/*.xml'
+        // }
         success {
           setGitHubBuildStatus('platform/utests/common/dev', 'Unit tests - common', 'SUCCESS')
         }
@@ -521,14 +522,15 @@ pipeline {
           Run runtime unit tests
           ----------------------------------------"""
           dir('nuxeo-runtime') {
-            sh "mvn -B -nsu test"
+            // sh "mvn -B -nsu test"
+            sh "mvn -B -nsu compile"
           }
         }
       }
       post {
-        always {
-          junit testResults: '**/target/surefire-reports/*.xml'
-        }
+        // always {
+        //   junit testResults: '**/target/surefire-reports/*.xml'
+        // }
         success {
           setGitHubBuildStatus('platform/utests/runtime/dev', 'Unit tests - runtime', 'SUCCESS')
         }
