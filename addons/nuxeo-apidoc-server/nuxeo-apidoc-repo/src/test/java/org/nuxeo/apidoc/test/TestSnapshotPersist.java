@@ -66,19 +66,6 @@ public class TestSnapshotPersist {
     @Inject
     protected SnapshotManager snapshotManager;
 
-    @Before
-    public void setupRuntime() throws IOException {
-        Framework.getRuntime().getHome();
-
-        String rootPath = Framework.getRuntime().getHome().getAbsolutePath();
-        File dir = new File(rootPath + "/META-INF/");
-        dir.mkdirs();
-
-        FileWriter writer = new FileWriter(rootPath + "/META-INF/nuxeo-preprocessor.xml");
-        writer.write("<?xml version=\"1.0\"?>\n" + "<container></container>");
-        writer.close();
-    }
-
     protected String dumpSnapshot(DistributionSnapshot snap) {
         StringBuilder sb = new StringBuilder();
 
