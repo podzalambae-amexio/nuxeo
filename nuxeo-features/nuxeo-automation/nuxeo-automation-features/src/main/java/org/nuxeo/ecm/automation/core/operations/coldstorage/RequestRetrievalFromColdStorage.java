@@ -28,13 +28,17 @@ import org.nuxeo.ecm.automation.core.collectors.DocumentModelCollector;
 import org.nuxeo.ecm.core.api.Blob;
 import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.NuxeoPrincipal;
 import org.nuxeo.ecm.core.blob.ColdStorageHelper;
+import org.nuxeo.ecm.platform.ec.notification.NotificationConstants;
+import org.nuxeo.ecm.platform.notification.api.NotificationManager;
+import org.nuxeo.runtime.api.Framework;
 
 /**
  * Requests a retrieval from the cold storage content associated with the input {@link DocumentModel}. This operation
  * will initiate a restoration request, calling the {@link Blob#getStream()} during this process doesn't mean you will
  * get the blob's content.
- *
+ * 
  * @since 11.1
  */
 @Operation(id = RequestRetrievalFromColdStorage.ID, category = Constants.CAT_BLOB, label = "Request retrieval from cold storage", description = "Request a retrieval of the cold storage content associated with the document.")
@@ -51,6 +55,17 @@ public class RequestRetrievalFromColdStorage {
     @OperationMethod(collector = DocumentModelCollector.class)
     public DocumentModel run(DocumentModel doc) {
         // request a retrieval
-        return ColdStorageHelper.requestRetrievalFromColdStorage(session, doc.getRef(), numberOfDaysOfAvailability);
+        DocumentModel documentModel = ColdStorageHelper.requestRetrievalFromColdStorage(session, doc.getRef(),
+                numberOfDaysOfAvailability);
+
+        // auto-subscribe the user, this way they will receive the mail notification when the content is available
+        NuxeoPrincipal principal = session.getPrincipal();
+        String username = NotificationConstants.USER_PREFIX + principal.getName();
+        NotificationManager notificationManager = Framework.getService(NotificationManager.class);
+        notificationManager.addSubscription(username,
+                ColdStorageHelper.COLD_STORAGE_CONTENT_AVAILABLE_NOTIFICATION_NAME, documentModel, false, principal,
+                ColdStorageHelper.COLD_STORAGE_CONTENT_AVAILABLE_NOTIFICATION_NAME);
+
+        return documentModel;
     }
 }

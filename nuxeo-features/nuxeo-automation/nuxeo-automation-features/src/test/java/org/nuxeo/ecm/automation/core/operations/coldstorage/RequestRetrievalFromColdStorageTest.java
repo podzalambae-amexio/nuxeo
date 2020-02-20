@@ -26,6 +26,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 import javax.inject.Inject;
@@ -38,10 +39,15 @@ import org.nuxeo.ecm.core.api.CoreSession;
 import org.nuxeo.ecm.core.api.DocumentModel;
 import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.core.blob.ColdStorageHelper;
+import org.nuxeo.ecm.platform.ec.notification.NotificationConstants;
+import org.nuxeo.ecm.platform.notification.api.NotificationManager;
+import org.nuxeo.runtime.test.runner.Deploy;
+import org.nuxeo.runtime.test.runner.TransactionalFeature;
 
 /**
  * @since 11.1
  */
+@Deploy("org.nuxeo.ecm.platform.notification.core")
 public class RequestRetrievalFromColdStorageTest extends AbstractTestColdStorageOperation {
 
     protected static final int NUMBER_OF_DAYS_OF_AVAILABILITY = 5;
@@ -51,6 +57,12 @@ public class RequestRetrievalFromColdStorageTest extends AbstractTestColdStorage
 
     @Inject
     protected AutomationService automationService;
+
+    @Inject
+    protected NotificationManager notificationManager;
+
+    @Inject
+    protected TransactionalFeature transactionalFeature;
 
     @Test
     public void shouldRequestRetrievalFromColdStorage() throws OperationException, IOException {
@@ -103,6 +115,11 @@ public class RequestRetrievalFromColdStorageTest extends AbstractTestColdStorage
             assertEquals(documentModel.getRef(), updatedDocument.getRef());
             assertTrue(Boolean.TRUE.equals(
                     updatedDocument.getPropertyValue(ColdStorageHelper.COLD_STORAGE_BEING_RETRIEVED_PROPERTY)));
+            String username = NotificationConstants.USER_PREFIX + session.getPrincipal().getName();
+            List<String> subscriptions = notificationManager.getSubscriptionsForUserOnDocument(username,
+                    updatedDocument);
+            assertTrue(subscriptions.contains(ColdStorageHelper.COLD_STORAGE_CONTENT_AVAILABLE_NOTIFICATION_NAME));
         }
     }
+
 }
