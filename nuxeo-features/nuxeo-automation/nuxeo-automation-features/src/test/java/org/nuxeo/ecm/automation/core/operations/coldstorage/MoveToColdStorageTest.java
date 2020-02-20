@@ -21,22 +21,19 @@ package org.nuxeo.ecm.automation.core.operations.coldstorage;
 
 import static javax.servlet.http.HttpServletResponse.SC_CONFLICT;
 import static javax.servlet.http.HttpServletResponse.SC_NOT_FOUND;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
-import java.io.Serializable;
 
 import javax.inject.Inject;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.nuxeo.ecm.automation.AutomationService;
-import org.nuxeo.ecm.automation.OperationContext;
 import org.nuxeo.ecm.automation.OperationException;
-import org.nuxeo.ecm.core.DummyThumbnailFactory;
-import org.nuxeo.ecm.core.api.*;
-import org.nuxeo.ecm.core.blob.ColdStorageHelper;
-import org.nuxeo.ecm.core.schema.FacetNames;
+import org.nuxeo.ecm.core.api.CoreSession;
+import org.nuxeo.ecm.core.api.DocumentModel;
+import org.nuxeo.ecm.core.api.NuxeoException;
 import org.nuxeo.ecm.core.test.ColdStorageFeature;
 import org.nuxeo.runtime.test.runner.Deploy;
 import org.nuxeo.runtime.test.runner.Features;
@@ -48,30 +45,25 @@ import org.nuxeo.runtime.test.runner.FeaturesRunner;
 @RunWith(FeaturesRunner.class)
 @Features(ColdStorageFeature.class)
 @Deploy("org.nuxeo.ecm.automation.core")
-public class MoveToColdStorageTest {
-
-    protected static final String FILE_CONTENT = "foo and boo";
+public class MoveToColdStorageTest extends AbstractTestColdStorageOperation {
 
     @Inject
     protected CoreSession session;
 
-    @Inject
-    protected AutomationService automationService;
-
     @Test
     public void shouldMoveToColdStorage() throws OperationException, IOException {
-        DocumentModel documentModel = createDocument(true);
-        moveContentToColdStorage(documentModel);
+        DocumentModel documentModel = createFileDocument(session, true);
+        moveContentToColdStorage(session, documentModel);
     }
 
     @Test
     public void shouldFailWhenMovingDocumentBlobAlreadyInColdStorage() throws OperationException, IOException {
-        DocumentModel documentModel = createDocument(true);
+        DocumentModel documentModel = createFileDocument(session, true);
         // make a move
-        moveContentToColdStorage(documentModel);
+        moveContentToColdStorage(session, documentModel);
         try {
             // try to make a second move
-            moveContentToColdStorage(documentModel);
+            moveContentToColdStorage(session, documentModel);
             fail("Should fail because the content is already in cold storage");
         } catch (NuxeoException ne) {
             assertEquals(SC_CONFLICT, ne.getStatusCode());
@@ -80,36 +72,12 @@ public class MoveToColdStorageTest {
 
     @Test
     public void shouldFailWhenMovingToColdStorageDocumentWithoutContent() throws OperationException, IOException {
-        DocumentModel documentModel = createDocument(false);
+        DocumentModel documentModel = createFileDocument(session, false);
         try {
-            moveContentToColdStorage(documentModel);
+            moveContentToColdStorage(session, documentModel);
             fail("Should fail because there is no main content associated with the document");
         } catch (NuxeoException ne) {
             assertEquals(SC_NOT_FOUND, ne.getStatusCode());
         }
     }
-
-    protected void moveContentToColdStorage(DocumentModel documentModel) throws OperationException, IOException {
-        try (OperationContext context = new OperationContext(session)) {
-            context.setInput(documentModel);
-            DocumentModel updatedDocModel = (DocumentModel) automationService.run(context, MoveToColdStorage.ID);
-            Blob fileContent = (Blob) updatedDocModel.getPropertyValue(ColdStorageHelper.FILE_CONTENT_PROPERTY);
-            Blob coldStorageContent = (Blob) updatedDocModel.getPropertyValue(
-                    ColdStorageHelper.COLD_STORAGE_CONTENT_PROPERTY);
-            assertEquals(documentModel.getRef(), updatedDocModel.getRef());
-            assertTrue(updatedDocModel.hasFacet(FacetNames.COLD_STORAGE));
-            assertEquals(DummyThumbnailFactory.DUMMY_THUMBNAIL_CONTENT, fileContent.getString());
-            assertEquals(FILE_CONTENT, coldStorageContent.getString());
-        }
-    }
-
-    protected DocumentModel createDocument(boolean withBlobContent) {
-        DocumentModel documentModel = session.createDocumentModel("/", "MyFile", "File");
-        if (withBlobContent) {
-            documentModel.setPropertyValue(ColdStorageHelper.FILE_CONTENT_PROPERTY,
-                    (Serializable) Blobs.createBlob(FILE_CONTENT));
-        }
-        return session.createDocument(documentModel);
-    }
-
 }

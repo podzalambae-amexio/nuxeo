@@ -308,6 +308,7 @@
       </widgets>
     </operation>
     <operation class="org.nuxeo.ecm.automation.core.operations.coldstorage.MoveToColdStorage" />
+    <operation class="org.nuxeo.ecm.automation.core.operations.coldstorage.RequestRetrievalFromColdStorage" />
     <operation
       class="org.nuxeo.ecm.automation.core.operations.document.RemoveDocumentBlob">
       <widgets>
