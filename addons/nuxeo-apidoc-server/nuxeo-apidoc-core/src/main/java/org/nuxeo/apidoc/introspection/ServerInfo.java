@@ -329,15 +329,6 @@ public class ServerInfo {
         List<ExtensionInfoImpl> contribRegistry = new ArrayList<>();
 
         Collection<RegistrationInfo> registrations = runtime.getComponentManager().getRegistrations();
-        // Sort registrations for deterministic export comparison
-        List<RegistrationInfo> orderedRegistrations = new ArrayList<>(registrations);
-        Collections.sort(orderedRegistrations, new Comparator<RegistrationInfo>() {
-            @Override
-            public int compare(RegistrationInfo o1, RegistrationInfo o2) {
-                return o1.getComponent().getName().getRawName().compareTo(o2.getComponent().getName().getRawName());
-            }
-        });
-
         for (RegistrationInfo ri : registrations) {
             String cname = ri.getName().getName();
             Bundle bundle = ri.getContext().getBundle();
