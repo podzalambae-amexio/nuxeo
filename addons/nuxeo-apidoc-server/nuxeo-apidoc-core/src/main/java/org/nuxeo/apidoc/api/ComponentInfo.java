@@ -21,7 +21,6 @@ package org.nuxeo.apidoc.api;
 
 import java.io.IOException;
 import java.net.URL;
-import java.util.Collection;
 import java.util.List;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
